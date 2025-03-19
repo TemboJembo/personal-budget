@@ -167,7 +167,7 @@
 
             g.append("path")
                 .attr("d", arc)
-                .style("fill", d => color(d.data.label));
+                .style("fill", d => d.data.color);
 
             g.append("polyline")
                 .attr("points", d => {
@@ -192,22 +192,30 @@
 
 
         function getBudget() {
-            axios.get('http://localhost:3000/budget')
-            .then(function (res) {
-                var budgetData = res.data.myBudget;
+    axios.get('http://localhost:3000/budget')
+    .then(function (res) {
+        const budgetData = res.data;
 
-                dataSource.datasets[0].data = budgetData.map(item => item.budget);
-                dataSource.labels = budgetData.map(item => item.title);
+        // Update Chart.js dataset dynamically from DB
+        dataSource.datasets[0].data = budgetData.map(item => item.value);
+        dataSource.datasets[0].backgroundColor = budgetData.map(item => item.color);
+        dataSource.labels = budgetData.map(item => item.title);
 
-                var d3Data = budgetData.map(item => ({ label: item.title, value: item.budget }));
+        createChart();
 
-                createChart();
-                createD3Chart(d3Data);
-            })
-            .catch(function (error) {
-                console.error("Error fetching budget data:", error);
-            });
-        }
+        // Prepare D3 data structure
+        const d3Data = budgetData.map(item => ({
+            label: item.title,
+            value: item.value,
+            color: item.color
+        }));
+
+        createD3Chart(d3Data);
+    })
+    .catch(function (error) {
+        console.error("Error fetching budget data:", error);
+    });
+}
 
         getBudget();
     </script>
